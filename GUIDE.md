@@ -16,8 +16,9 @@ Also, of course you should have a C++ compiler. At the moment `dd-star` supports
 
 To test the prerequisites, check that you can build a bare clone of `dd-star`.
 
-    $ git clone 
+    $ git clone https://github.com/hhexo/dd-star.git
     ...
+    $ cd dd-star
     $ make reset
     ...
     $ make everything
