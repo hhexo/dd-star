@@ -1,0 +1,11 @@
+
+DD-STAR
+Copyright 2015 Dario Domizioli
+
+This product includes software developed by Dario Domizioli.
+
+
+This product also bundles a copy of CATCH, the C++ unit testing framework by
+Phil Nash and other contributors. See https://github.com/philsquared/Catch for
+details. CATCH is licensed under the Boost license, a copy of which can be found
+in deps/catch/LICENSE_1_0.txt.

@@ -1,0 +1,18 @@
+/* Extra CSS for documentation */
+
+/* Tweak slightly the format of free-standing code within a paragraph. */
+code {
+    color: #4665A2; 
+    border: 1px dotted #C4CFE5;
+    background-color: #FBFCFD;
+}
+
+/* Tweak slightly the spacing of headers. */
+h2 {
+    padding-top: 20px;
+    padding-bottom: 0px;
+}
+
+h3 {
+    padding-top: 12px;
+}
