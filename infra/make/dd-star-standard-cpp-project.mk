@@ -37,13 +37,6 @@ PROJECT_MAIN_SRCS ?=
 include $(DDSTAR_TOP_LEVEL_DIR)/infra/make/dd-star-dirs-and-projects.mk
 
 # =============================================================================
-# OPTIONAL LOCAL CONFIGURATION
-# =============================================================================
-
-# Include a local configuration file if the user created one.
--include $(DDSTAR_TOP_LEVEL_DIR)/local-config.mk
-
-# =============================================================================
 # FIRST TARGET
 # =============================================================================
 
@@ -66,13 +59,14 @@ PROJECT_NUMBER_COMMITS := $(shell cd $(PROJECT_DIRECTORY); git rev-list --count 
 endif
 
 # =============================================================================
-# INITIALISATION
+# TOOLS DEFINITIONS
 # =============================================================================
 
+include $(DDSTAR_TOP_LEVEL_DIR)/infra/make/dd-star-tooling.mk
 
-DOXYGEN ?= doxygen
-AR ?= ar
-PYTHON ?= python
+# =============================================================================
+# COMPILATION FLAGS
+# =============================================================================
 
 PROJECT_VERSION_DEFS := -DVERSION_ACTIVE_BRANCH="\"$(PROJECT_ACTIVE_BRANCH)\"" -DVERSION_HEAD_COMMIT_HASH="\"$(PROJECT_HEAD_COMMIT_HASH)\"" -DVERSION_NUMBER_COMMITS=$(PROJECT_NUMBER_COMMITS)
 
@@ -102,6 +96,19 @@ CFLAGS_CHECKING := $(FLAGS_FOR_ALL) -O2 -g -DASSERTS=1 $(INCLUDE_FLAGS) $(PROJEC
 CXXFLAGS_CHECKING := $(FLAGS_FOR_ALL) -std=c++11 -pthread -O2 -g -DASSERTS=1 $(INCLUDE_FLAGS) $(PROJECT_VERSION_DEFS)
 LDFLAGS_CHECKING := -pthread $(LIBRARY_FLAGS_CHECKING)
 
+# =============================================================================
+# OPTIONAL LOCAL CONFIGURATION
+# =============================================================================
+
+# Include a local configuration file if the user created one.
+# This can override settings for tools, version, and so on.
+-include $(DDSTAR_TOP_LEVEL_DIR)/local-config.mk
+
+
+# =============================================================================
+# SOURCES AND TARGETS
+# =============================================================================
+
 ALL_INCLUDES := $(wildcard $(PROJECT_DIRECTORY)/include/*.h) \
                 $(wildcard $(PROJECT_DIRECTORY)/include/*/*.h) \
                 $(wildcard $(PROJECT_DIRECTORY)/include/*/*/*.h) \
@@ -126,11 +133,6 @@ CPPSRCS := $(wildcard $(PROJECT_DIRECTORY)/src/*.cpp) \
            $(wildcard $(PROJECT_DIRECTORY)/src/*/*/*/*/*/*.cpp) \
            $(wildcard $(PROJECT_DIRECTORY)/src/*/*/*/*/*/*/*.cpp)
 
-# If we have cpp sources use the compiler driver as the linker
-ifneq ($(strip $(CPPSRCS)),)
-LD = $(CXX)
-endif
-
 # Objects
 COBJS_DEBUG = $(patsubst $(PROJECT_DIRECTORY)/src/%.c,$(PROJECT_DIRECTORY)/build/obj/debug/%.o,$(CSRCS))
 CPPOBJS_DEBUG = $(patsubst $(PROJECT_DIRECTORY)/src/%.cpp,$(PROJECT_DIRECTORY)/build/obj/debug/%.opp,$(CPPSRCS))
@@ -147,7 +149,14 @@ LIBOBJS_DEBUG = $(filter-out $(MAINOBJS_DEBUG),$(CPPOBJS_DEBUG) $(COBJS_DEBUG))
 LIBOBJS_RELEASE = $(filter-out $(MAINOBJS_RELEASE),$(CPPOBJS_RELEASE) $(COBJS_RELEASE))
 LIBOBJS_CHECKING = $(filter-out $(MAINOBJS_CHECKING),$(CPPOBJS_CHECKING) $(COBJS_CHECKING))
 
-# Dependencies
+# Final targets
+TARGET_LIBRARY := lib$(PROJECT_NAME).a
+TARGET_PROGRAMS := $(patsubst $(PROJECT_DIRECTORY)/src/%.cpp,%,$(abspath $(PROJECT_MAIN_SRCS)))
+
+# =============================================================================
+# SOURCE DEPENDENCIES CONSTRUCTION
+# =============================================================================
+
 CDEPS_DEBUG = $(patsubst $(PROJECT_DIRECTORY)/src/%.c,$(PROJECT_DIRECTORY)/build/obj/debug/%.d,$(CSRCS))
 CPPDEPS_DEBUG = $(patsubst $(PROJECT_DIRECTORY)/src/%.cpp,$(PROJECT_DIRECTORY)/build/obj/debug/%.dpp,$(CPPSRCS))
 CDEPS_RELEASE = $(patsubst $(PROJECT_DIRECTORY)/src/%.c,$(PROJECT_DIRECTORY)/build/obj/release/%.d,$(CSRCS))
@@ -158,10 +167,6 @@ dep_file_include_line = -include $(1)
 $(foreach depfile,$(CDEPS_DEBUG) $(CPPDEPS_DEBUG),$(eval $(call dep_file_include_line,$(depfile))))
 $(foreach depfile,$(CDEPS_RELEASE) $(CPPDEPS_RELEASE),$(eval $(call dep_file_include_line,$(depfile))))
 $(foreach depfile,$(CDEPS_CHECKING) $(CPPDEPS_CHECKING),$(eval $(call dep_file_include_line,$(depfile))))
-
-# Final targets
-TARGET_LIBRARY := lib$(PROJECT_NAME).a
-TARGET_PROGRAMS := $(patsubst $(PROJECT_DIRECTORY)/src/%.cpp,%,$(abspath $(PROJECT_MAIN_SRCS)))
 
 # =============================================================================
 # CLEANUP

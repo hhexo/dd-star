@@ -12,4 +12,30 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
- 
+# Check we have Python on the path.
+ifneq ($(shell python --version 2>&1),)
+PYTHON ?= python
+else
+$(error Missing prerequisite - Python must be on the path)
+endif
+
+# Determine compiler. Prefer clang to gcc if it's available.
+# Also we let the compiler driver identify the linker.
+ifneq ($(shell clang --version 2>/dev/null),)
+CC  := clang
+CXX := clang++
+LD  := clang++
+else
+ifneq ($(shell gcc --version),)
+# Use g++
+CC  := gcc
+CXX := g++
+LD  := g++
+endif
+endif 
+
+# Archiver.
+AR ?= ar
+
+# Doxygen.
+DOXYGEN ?= doxygen
