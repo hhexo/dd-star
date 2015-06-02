@@ -17,7 +17,6 @@ ifeq ($(strip $(DDSTAR_TOP_LEVEL_DIR)),)
 $(error DDSTAR_TOP_LEVEL_DIR must be defined when running sub-makefiles. Try running make from the top level)
 endif
 
-PROJECT_MAKEFILE := $(realpath $(firstword $(MAKEFILE_LIST)))
-PROJECT_DIRECTORY := $(patsubst %/Makefile,%,$(PROJECT_MAKEFILE))
+PROJECT_DIRECTORY := $(realpath $(dir $(firstword $(MAKEFILE_LIST))))
 PROJECT_NAME := $(notdir $(PROJECT_DIRECTORY))
 include $(DDSTAR_TOP_LEVEL_DIR)/infra/make/dd-star-standard-cpp-project.mk
