@@ -37,11 +37,10 @@ PROJECT_MAIN_SRCS ?=
 include $(DDSTAR_TOP_LEVEL_DIR)/infra/make/dd-star-dirs-and-projects.mk
 
 # =============================================================================
-# FIRST TARGET
+# TOOLS DEFINITIONS
 # =============================================================================
 
-# 'all' is the default target
-all: debug release checking
+include $(DDSTAR_TOP_LEVEL_DIR)/infra/make/dd-star-tooling.mk
 
 # =============================================================================
 # VERSION INFORMATION
@@ -59,12 +58,6 @@ PROJECT_NUMBER_COMMITS := $(shell cd $(PROJECT_DIRECTORY); git rev-list --count 
 endif
 
 # =============================================================================
-# TOOLS DEFINITIONS
-# =============================================================================
-
-include $(DDSTAR_TOP_LEVEL_DIR)/infra/make/dd-star-tooling.mk
-
-# =============================================================================
 # COMPILATION FLAGS
 # =============================================================================
 
@@ -75,8 +68,17 @@ include $(DDSTAR_TOP_LEVEL_DIR)/infra/make/dd-star-compile-flags.mk
 # =============================================================================
 
 # Include a local configuration file if the user created one.
-# This can override settings for tools, version, and so on.
+# This can override settings for tools, version, compile flags, and so on.
+# YOU DO THIS AT YOUR OWN RISK!
 -include $(DDSTAR_TOP_LEVEL_DIR)/local-config.mk
+
+
+# =============================================================================
+# DEFAULT TARGET
+# =============================================================================
+
+# 'all' is the default target
+all: debug release checking
 
 
 # =============================================================================
