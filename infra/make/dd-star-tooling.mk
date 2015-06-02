@@ -19,9 +19,16 @@ else
 $(error Missing prerequisite - Python must be on the path)
 endif
 
+# Check we have git on the path.
+ifneq ($(shell git --version 2>&1),)
+GIT ?= git
+else
+$(error Missing prerequisite - Git must be on the path)
+endif
+
 # Determine compiler. Prefer clang to gcc if it's available.
 # Also we let the compiler driver identify the linker.
-ifneq ($(shell clang --version 2>/dev/null),)
+ifneq ($(shell clang --version),)
 CC  := clang
 CXX := clang++
 LD  := clang++
