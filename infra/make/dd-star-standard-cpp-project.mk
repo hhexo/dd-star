@@ -12,35 +12,47 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+# =============================================================================
+# INPUT PARAMETERS
+# =============================================================================
+
 # Check we have defined DDSTAR_TOP_LEVEL_DIR before entering this file.
 ifeq ($(strip $(DDSTAR_TOP_LEVEL_DIR)),)
 $(error DDSTAR_TOP_LEVEL_DIR must be defined when running sub-makefiles. Try running make from the top level)
 endif
 
-include $(DDSTAR_TOP_LEVEL_DIR)/infra/make/dd-star-dirs-and-projects.mk
-
 # Check we have defined the input parameters
 ifeq ($(strip $(PROJECT_NAME)),)
-$(error PROJECT_NAME must be defined when using the standard cpp makefile)
+$(error PROJECT_NAME must be defined when using the standard makefile)
 endif
 ifeq ($(strip $(PROJECT_DIRECTORY)),)
-$(error PROJECT_DIRECTORY must be defined when using the standard cpp makefile)
+$(error PROJECT_DIRECTORY must be defined when using the standard makefile)
 endif
 PROJECT_MAIN_SRCS ?= 
 
-# 'all' as first target
-all: debug release checking
+# =============================================================================
+# DIRECTORIES DEFINITIONS
+# =============================================================================
+
+include $(DDSTAR_TOP_LEVEL_DIR)/infra/make/dd-star-dirs-and-projects.mk
 
 # =============================================================================
-# INITIALISATION
+# OPTIONAL LOCAL CONFIGURATION
 # =============================================================================
 
 # Include a local configuration file if the user created one.
 -include $(DDSTAR_TOP_LEVEL_DIR)/local-config.mk
 
-DOXYGEN ?= doxygen
-AR ?= ar
-PYTHON ?= python
+# =============================================================================
+# FIRST TARGET
+# =============================================================================
+
+# 'all' is the default target
+all: debug release checking
+
+# =============================================================================
+# VERSION INFORMATION
+# =============================================================================
 
 # Useful version information. If the project is not under Git, use mock values.
 ifeq ($(wildcard $(PROJECT_DIRECTORY)/.git)$(wildcard $(DDSTAR_TOP_LEVEL_DIR)/.git),)
@@ -52,6 +64,16 @@ PROJECT_ACTIVE_BRANCH := $(shell cd $(PROJECT_DIRECTORY); git rev-parse --abbrev
 PROJECT_HEAD_COMMIT_HASH := $(shell cd $(PROJECT_DIRECTORY); git rev-parse HEAD)
 PROJECT_NUMBER_COMMITS := $(shell cd $(PROJECT_DIRECTORY); git rev-list --count master..)
 endif
+
+# =============================================================================
+# INITIALISATION
+# =============================================================================
+
+
+DOXYGEN ?= doxygen
+AR ?= ar
+PYTHON ?= python
+
 PROJECT_VERSION_DEFS := -DVERSION_ACTIVE_BRANCH="\"$(PROJECT_ACTIVE_BRANCH)\"" -DVERSION_HEAD_COMMIT_HASH="\"$(PROJECT_HEAD_COMMIT_HASH)\"" -DVERSION_NUMBER_COMMITS=$(PROJECT_NUMBER_COMMITS)
 
 # Include flags from dependencies
