@@ -119,134 +119,13 @@ tests: checking $(UNIT_TESTS_RESULTS_FILE) $(SYSTEM_TESTS_RESULTS_FILE)
 # UNIT TESTS
 # =============================================================================
 
-UNIT_TESTS_MAIN_FILE := $(PROJECT_DIRECTORY)/build/test/unit/main.cpp
-UNIT_TESTS_MAIN_OBJ := $(PROJECT_DIRECTORY)/build/test/unit/main.opp
-UNIT_TESTS_EXECUTABLE := $(PROJECT_DIRECTORY)/build/test/unit/run-unit-tests
-
-# Unit tests must be C++
-UNITSRCS := $(wildcard $(PROJECT_DIRECTORY)/test/unit/*.cpp) \
-            $(wildcard $(PROJECT_DIRECTORY)/test/unit/*/*.cpp) \
-            $(wildcard $(PROJECT_DIRECTORY)/test/unit/*/*/*.cpp) \
-            $(wildcard $(PROJECT_DIRECTORY)/test/unit/*/*/*/*.cpp) \
-            $(wildcard $(PROJECT_DIRECTORY)/test/unit/*/*/*/*/*.cpp) \
-            $(wildcard $(PROJECT_DIRECTORY)/test/unit/*/*/*/*/*/*.cpp) \
-            $(wildcard $(PROJECT_DIRECTORY)/test/unit/*/*/*/*/*/*/*.cpp)
-UNITOBJS = $(patsubst $(PROJECT_DIRECTORY)/test/unit/%.cpp,$(PROJECT_DIRECTORY)/build/test/unit/obj/%.opp,$(UNITSRCS))
-UNITDEPS = $(patsubst $(PROJECT_DIRECTORY)/test/unit/%.cpp,$(PROJECT_DIRECTORY)/build/test/unit/obj/%.dpp,$(UNITSRCS))
-$(foreach depfile,$(UNITDEPS),$(eval $(call dep_file_include_line,$(depfile))))
-
-$(PROJECT_DIRECTORY)/build/test/unit/obj/%.opp: $(PROJECT_DIRECTORY)/test/unit/%.cpp
-	@mkdir -p $(dir $@)
-	@echo "[$(PROJECT_NAME)] Compiling unit test file $<..."
-	@$(CXX) -c $(CXXFLAGS_CHECKING) $< -o $@
-
-$(PROJECT_DIRECTORY)/build/test/unit/obj/%.dpp: $(PROJECT_DIRECTORY)/test/unit/%.cpp
-	@mkdir -p $(dir $@)
-	@set -e; rm -f $@; \
-        $(CXX) -MM $(CXXFLAGS_CHECKING) -MT $(patsubst $(PROJECT_DIRECTORY)/test/unit/%.cpp,$(PROJECT_DIRECTORY)/build/test/unit/obj/%.opp,$<) $< -o $@.$$$$; \
-        sed 's,\($*\)\.opp[ :]*,\1.opp $@ : ,g' < $@.$$$$ > $@; \
-        rm -f $@.$$$$
-
-# Force running the unit tests if there is at least one
-ifneq ($(strip $(UNITSRCS)),)
-FORCE_UNIT_TESTS = FORCE
-FORCE:
-endif
-
-$(UNIT_TESTS_RESULTS_FILE): $(UNIT_TESTS_EXECUTABLE) $(FORCE_UNIT_TESTS)
-	@mkdir -p $(PROJECT_DIRECTORY)/build/test/unit/results
-	@echo "[$(PROJECT_NAME)] Running unit tests..."
-	@($(UNIT_TESTS_EXECUTABLE) -r junit -o $@) || (cat $@)
-
-# Link against the checking library
-UNIT_TESTS_LINK_PROJECT_FILES = $(PROJECT_DIRECTORY)/build/lib/checking/$(TARGET_LIBRARY)
-
-$(UNIT_TESTS_EXECUTABLE): $(UNIT_TESTS_MAIN_OBJ) $(UNITOBJS) $(UNIT_TESTS_LINK_PROJECT_FILES)
-	@echo "[$(PROJECT_NAME)] Linking unit tests..."
-	@$(CXX) $(UNIT_TESTS_MAIN_OBJ) $(UNITOBJS) $(UNIT_TESTS_LINK_PROJECT_FILES) $(LDFLAGS_CHECKING) -o $@
-
-$(UNIT_TESTS_MAIN_OBJ): $(UNIT_TESTS_MAIN_FILE)
-	@echo "[$(PROJECT_NAME)] Compiling unit tests main file..."
-	@$(CXX) -c $(CXXFLAGS_CHECKING) $< -o $@
-
-$(UNIT_TESTS_MAIN_FILE):
-	@mkdir -p $(PROJECT_DIRECTORY)/build/test/unit
-	@echo "[$(PROJECT_NAME)] Autogenerating main file for unit tests..."
-	@echo "" >$@
-	@echo "// GENERATED FILE. DO NOT EDIT." >>$@
-	@echo "" >>$@
-	@echo "#define CATCH_CONFIG_MAIN" >>$@
-	@echo "" >>$@
-	@echo "#include <catch/catch.hpp>" >>$@
-	@echo "" >>$@
-	@echo "namespace {} // just to have something in here" >>$@
-	@echo "" >>$@
+include $(DDSTAR_TOP_LEVEL_DIR)/infra/make/dd-star-unit-tests.mk
 
 # =============================================================================
 # SYSTEM TESTS
 # =============================================================================
 
-# C++ sources in the system tests directories are library system tests. Each one
-# should have a main() that performs the test, and should be invoked via ddtest
-# directives written in the source itself.
-SYST_TESTS_LINK_PROJECT_FILES = -L$(PROJECT_DIRECTORY)/build/lib/checking -l$(PROJECT_NAME)
-
-SYSTSRCS := $(wildcard $(PROJECT_DIRECTORY)/test/system/*.cpp) \
-            $(wildcard $(PROJECT_DIRECTORY)/test/system/*/*.cpp) \
-            $(wildcard $(PROJECT_DIRECTORY)/test/system/*/*/*.cpp) \
-            $(wildcard $(PROJECT_DIRECTORY)/test/system/*/*/*/*.cpp) \
-            $(wildcard $(PROJECT_DIRECTORY)/test/system/*/*/*/*/*.cpp) \
-            $(wildcard $(PROJECT_DIRECTORY)/test/system/*/*/*/*/*/*.cpp) \
-            $(wildcard $(PROJECT_DIRECTORY)/test/system/*/*/*/*/*/*/*.cpp)
-SYSTDEPS = $(patsubst $(PROJECT_DIRECTORY)/test/system/%.cpp,$(PROJECT_DIRECTORY)/build/test/system/obj/%.dpp,$(SYSTSRCS))
-SYSTEXES = $(patsubst $(PROJECT_DIRECTORY)/test/system/%.cpp,$(PROJECT_DIRECTORY)/build/test/system/obj/%,$(SYSTSRCS))
-SYSTSRCSRESULTS = $(patsubst $(PROJECT_DIRECTORY)/test/system/%.cpp,$(PROJECT_DIRECTORY)/build/test/system/obj/%.result,$(SYSTSRCS))
-$(foreach depfile,$(SYSTDEPS),$(eval $(call dep_file_include_line,$(depfile))))
-
-$(PROJECT_DIRECTORY)/build/test/system/obj/%: $(PROJECT_DIRECTORY)/test/system/%.cpp $(PROJECT_DIRECTORY)/build/lib/checking/$(TARGET_LIBRARY)
-	@mkdir -p $(dir $@)
-	@echo "[$(PROJECT_NAME)] Compiling and linking system test file $<..."
-	@$(CXX) $< $(CXXFLAGS_CHECKING) $(SYST_TESTS_LINK_PROJECT_FILES) $(LDFLAGS_CHECKING) -o $@
-
-$(PROJECT_DIRECTORY)/build/test/system/obj/%.dpp: $(PROJECT_DIRECTORY)/test/system/%.cpp
-	@mkdir -p $(dir $@)
-	@set -e; rm -f $@; \
-        $(CXX) -MM $(CXXFLAGS_CHECKING) -MT $(patsubst $(PROJECT_DIRECTORY)/test/system/%.cpp,$(PROJECT_DIRECTORY)/build/test/unit/obj/%.opp,$<) $< -o $@.$$$$; \
-        sed 's,\($*\)\.opp[ :]*,\1 $@ : ,g' < $@.$$$$ > $@; \
-        rm -f $@.$$$$
-
-$(PROJECT_DIRECTORY)/build/test/system/obj/%.result: $(PROJECT_DIRECTORY)/test/system/%.cpp $(PROJECT_DIRECTORY)/build/test/system/obj/%
-	@mkdir -p $(dir $@)
-	@echo "[$(PROJECT_NAME)] Running system test $<..."
-	@env PATH=$$PATH:$(PROJECT_DIRECTORY)/build/bin/checking $(PYTHON) $(DDSTAR_TOP_LEVEL_DIR)/infra/py/ddtest.py --run $@ $+
-
-tests: $(SYSTEXES)
-
-# System tests for programs must be text files. Each one contains test
-# directives for ddtest and can be used as the argument to the program under
-# test.
-SYST_ALL_TEXTS := $(wildcard $(PROJECT_DIRECTORY)/test/system/*) \
-                  $(wildcard $(PROJECT_DIRECTORY)/test/system/*/*) \
-                  $(wildcard $(PROJECT_DIRECTORY)/test/system/*/*/*) \
-                  $(wildcard $(PROJECT_DIRECTORY)/test/system/*/*/*/*) \
-                  $(wildcard $(PROJECT_DIRECTORY)/test/system/*/*/*/*/*) \
-                  $(wildcard $(PROJECT_DIRECTORY)/test/system/*/*/*/*/*/*) \
-                  $(wildcard $(PROJECT_DIRECTORY)/test/system/*/*/*/*/*/*/*)
-SYST_TEXTS_AND_DIRS := $(filter-out $(SYSTSRCS),$(SYST_ALL_TEXTS))
-SYST_SPURIOUS_DIRS := $(patsubst %/.,%,$(wildcard $(addsuffix /.,$(SYST_TEXTS_AND_DIRS))))
-SYSTTEXTS := $(filter-out $(SYST_SPURIOUS_DIRS),$(SYST_TEXTS_AND_DIRS))
-SYSTTEXTRESULTS = $(patsubst $(PROJECT_DIRECTORY)/test/system/%,$(PROJECT_DIRECTORY)/build/test/system/txt/%.result,$(SYSTTEXTS))
-
-$(PROJECT_DIRECTORY)/build/test/system/txt/%.result: $(PROJECT_DIRECTORY)/test/system/% $(CHECKING_PROGRAMS)
-	@mkdir -p $(dir $@)
-	@echo "[$(PROJECT_NAME)] Running system test $(firstword $+)..."
-	@env PATH=$$PATH:$(PROJECT_DIRECTORY)/build/bin/checking $(PYTHON) $(DDSTAR_TOP_LEVEL_DIR)/infra/py/ddtest.py --run $@ $<
-
-SYSTRESULTS = $(SYSTSRCSRESULTS) $(SYSTTEXTRESULTS)
-$(SYSTEM_TESTS_RESULTS_FILE): $(SYSTRESULTS)
-	@mkdir -p $(dir $@)
-	@echo "[$(PROJECT_NAME)] Gathering system test results..."
-	@env PATH=$$PATH:$(PROJECT_DIRECTORY)/build/bin/checking $(PYTHON) $(DDSTAR_TOP_LEVEL_DIR)/infra/py/ddtest.py --gather $@ $+
+include $(DDSTAR_TOP_LEVEL_DIR)/infra/make/dd-star-system-tests.mk
 
 # =============================================================================
 # DOCUMENTATION
