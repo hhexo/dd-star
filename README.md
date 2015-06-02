@@ -47,7 +47,7 @@ there is no reason why `dd-star` should appeal to you.
 * Linux or MacOSX
 
 Technically, I think any UNIX-like system is suitable as an operating system in
-which to use `dd-star`. However, I have only tested Linux (ubuntu and SuSE) and
+which to use `dd-star`. However, I have only tested Linux (Ubuntu and SuSE) and
 MacOSX 10.
 
 ### Compiler
@@ -55,13 +55,15 @@ MacOSX 10.
 * GCC 4.8 (or later), or Clang 3.4 (or later)
 * A C++ standard library that supports the C++11 standard
 
-The build system will use whatever compiler is defined in $CC and $CXX.
+The build system will prefer Clang if both compilers are available. If none is
+found, it will use whatever is defined in $CC, $CXX and $LD, however these might
+not be compatible with the Clang or GCC flags.
 
 ### Tools
 
 * GNU Make 3.81 or later
 * Python 2.7
-* Git 1.7 or later
+* Git
 * [optional] Doxygen 1.8.x or later, for generating documentation
 
 I think Python 3.x should be OK too, but I have not tested it.
@@ -70,14 +72,15 @@ I think Python 3.x should be OK too, but I have not tested it.
 
 ## How to work with a dd-star based project.
 
-First of all, create a bare clone of `dd-star`. Then go to that directory and
-type `make`. A help message will explain which targets are available for
-handling the default projects.
+You can start from a clone of `dd-star`. Go to that directory and type `make`.
+A help message will explain which targets are available for handling the default
+projects.
 
 `make everything` will always build all projects (`core` and `satellites`).
 
 `make reset` will clean all projects.
 
-Just start playing with it, adding projects and files. It's that simple.
+You can then just start playing with it, adding projects and files. It's that
+simple.
 
-Full guidance is provided in GUIDE.md.
+Full guidance for working with `dd-star` is provided in GUIDE.md.

@@ -12,7 +12,7 @@ sure your system satisfies its few prerequisites.
   reports 1.8.x or a later version.
 
 Also, of course you should have a C++ compiler. At the moment `dd-star` supports
-`gcc` and `clang`.
+`gcc` and `clang`, and it prefers `clang` if both are available.
 
 To test the prerequisites, check that you can build a clone of `dd-star`.
 
