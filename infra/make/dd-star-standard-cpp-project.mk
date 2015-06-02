@@ -89,16 +89,7 @@ include $(DDSTAR_TOP_LEVEL_DIR)/infra/make/dd-star-sources-and-targets.mk
 # SOURCE DEPENDENCIES CONSTRUCTION
 # =============================================================================
 
-CDEPS_DEBUG = $(patsubst $(PROJECT_DIRECTORY)/src/%.c,$(PROJECT_DIRECTORY)/build/obj/debug/%.d,$(CSRCS))
-CPPDEPS_DEBUG = $(patsubst $(PROJECT_DIRECTORY)/src/%.cpp,$(PROJECT_DIRECTORY)/build/obj/debug/%.dpp,$(CPPSRCS))
-CDEPS_RELEASE = $(patsubst $(PROJECT_DIRECTORY)/src/%.c,$(PROJECT_DIRECTORY)/build/obj/release/%.d,$(CSRCS))
-CPPDEPS_RELEASE = $(patsubst $(PROJECT_DIRECTORY)/src/%.cpp,$(PROJECT_DIRECTORY)/build/obj/release/%.dpp,$(CPPSRCS))
-CDEPS_CHECKING = $(patsubst $(PROJECT_DIRECTORY)/src/%.c,$(PROJECT_DIRECTORY)/build/obj/checking/%.d,$(CSRCS))
-CPPDEPS_CHECKING = $(patsubst $(PROJECT_DIRECTORY)/src/%.cpp,$(PROJECT_DIRECTORY)/build/obj/checking/%.dpp,$(CPPSRCS))
-dep_file_include_line = -include $(1)
-$(foreach depfile,$(CDEPS_DEBUG) $(CPPDEPS_DEBUG),$(eval $(call dep_file_include_line,$(depfile))))
-$(foreach depfile,$(CDEPS_RELEASE) $(CPPDEPS_RELEASE),$(eval $(call dep_file_include_line,$(depfile))))
-$(foreach depfile,$(CDEPS_CHECKING) $(CPPDEPS_CHECKING),$(eval $(call dep_file_include_line,$(depfile))))
+include $(DDSTAR_TOP_LEVEL_DIR)/infra/make/dd-star-source-dependencies-generation.mk
 
 # =============================================================================
 # CLEANUP
@@ -159,21 +150,6 @@ $(PROJECT_DIRECTORY)/build/obj/debug/%.opp: $(PROJECT_DIRECTORY)/src/%.cpp
 	@echo "[$(PROJECT_NAME)] Compiling $< for Debug..."
 	@$(CXX) -c $(CXXFLAGS_DEBUG) $< -o $@
 
-# Dependency files, built according to the example in the GNU make manual.
-$(PROJECT_DIRECTORY)/build/obj/debug/%.d: $(PROJECT_DIRECTORY)/src/%.c
-	@mkdir -p $(dir $@)
-	@set -e; rm -f $@; \
-        $(CC) -MM $(CFLAGS_DEBUG) -MT $(patsubst $(PROJECT_DIRECTORY)/src/%.c,$(PROJECT_DIRECTORY)/build/obj/debug/%.o,$<) $< -o $@.$$$$; \
-        sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
-        rm -f $@.$$$$
-
-$(PROJECT_DIRECTORY)/build/obj/debug/%.dpp: $(PROJECT_DIRECTORY)/src/%.cpp
-	@mkdir -p $(dir $@)
-	@set -e; rm -f $@; \
-        $(CXX) -MM $(CXXFLAGS_DEBUG) -MT $(patsubst $(PROJECT_DIRECTORY)/src/%.cpp,$(PROJECT_DIRECTORY)/build/obj/debug/%.opp,$<) $< -o $@.$$$$; \
-        sed 's,\($*\)\.opp[ :]*,\1.opp $@ : ,g' < $@.$$$$ > $@; \
-        rm -f $@.$$$$
-
 # =============================================================================
 # RELEASE BUILD
 # =============================================================================
@@ -202,21 +178,6 @@ $(PROJECT_DIRECTORY)/build/obj/release/%.opp: $(PROJECT_DIRECTORY)/src/%.cpp
 	@echo "[$(PROJECT_NAME)] Compiling $< for Release..."
 	@$(CXX) -c $(CXXFLAGS_RELEASE) $< -o $@
 
-# Dependency files, built according to the example in the GNU make manual.
-$(PROJECT_DIRECTORY)/build/obj/release/%.d: $(PROJECT_DIRECTORY)/src/%.c
-	@mkdir -p $(dir $@)
-	@set -e; rm -f $@; \
-        $(CC) -MM $(CFLAGS_RELEASE) -MT $(patsubst $(PROJECT_DIRECTORY)/src/%.c,$(PROJECT_DIRECTORY)/build/obj/release/%.o,$<) $< -o $@.$$$$; \
-        sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
-        rm -f $@.$$$$
-
-$(PROJECT_DIRECTORY)/build/obj/release/%.dpp: $(PROJECT_DIRECTORY)/src/%.cpp
-	@mkdir -p $(dir $@)
-	@set -e; rm -f $@; \
-        $(CXX) -MM $(CXXFLAGS_RELEASE) -MT $(patsubst $(PROJECT_DIRECTORY)/src/%.cpp,$(PROJECT_DIRECTORY)/build/obj/release/%.opp,$<) $< -o $@.$$$$; \
-        sed 's,\($*\)\.opp[ :]*,\1.opp $@ : ,g' < $@.$$$$ > $@; \
-        rm -f $@.$$$$
-
 # =============================================================================
 # CHECKING BUILD
 # =============================================================================
@@ -244,21 +205,6 @@ $(PROJECT_DIRECTORY)/build/obj/checking/%.opp: $(PROJECT_DIRECTORY)/src/%.cpp
 	@mkdir -p $(dir $@)
 	@echo "[$(PROJECT_NAME)] Compiling $< for Checking..."
 	@$(CXX) -c $(CXXFLAGS_CHECKING) $< -o $@
-
-# Dependency files, built according to the example in the GNU make manual.
-$(PROJECT_DIRECTORY)/build/obj/checking/%.d: $(PROJECT_DIRECTORY)/src/%.c
-	@mkdir -p $(dir $@)
-	@set -e; rm -f $@; \
-        $(CC) -MM $(CFLAGS_CHECKING) -MT $(patsubst $(PROJECT_DIRECTORY)/src/%.c,$(PROJECT_DIRECTORY)/build/obj/checking/%.o,$<) $< -o $@.$$$$; \
-        sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
-        rm -f $@.$$$$
-
-$(PROJECT_DIRECTORY)/build/obj/checking/%.dpp: $(PROJECT_DIRECTORY)/src/%.cpp
-	@mkdir -p $(dir $@)
-	@set -e; rm -f $@; \
-        $(CXX) -MM $(CXXFLAGS_CHECKING) -MT $(patsubst $(PROJECT_DIRECTORY)/src/%.cpp,$(PROJECT_DIRECTORY)/build/obj/checking/%.opp,$<) $< -o $@.$$$$; \
-        sed 's,\($*\)\.opp[ :]*,\1.opp $@ : ,g' < $@.$$$$ > $@; \
-        rm -f $@.$$$$
 
 # =============================================================================
 # TESTS
