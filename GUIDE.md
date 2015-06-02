@@ -14,7 +14,7 @@ sure your system satisfies its few prerequisites.
 Also, of course you should have a C++ compiler. At the moment `dd-star` supports
 `gcc` and `clang`.
 
-To test the prerequisites, check that you can build a bare clone of `dd-star`.
+To test the prerequisites, check that you can build a clone of `dd-star`.
 
     $ git clone https://github.com/hhexo/dd-star.git
     ...
@@ -172,6 +172,29 @@ XML files detailing the results of the unit and system tests of the project.
 
 This section of the guide contains a lot of "how to" subsections illustrating
 typical use cases of working with `dd-star`.
+
+### How to initialise your `dd-star` based project
+
+To start working in a `dd-star` based environment, you could clone the `dd-star`
+repository and then just remove the .git directory...
+
+    git clone https://github.com/hhexo/dd-star.git <your_project_name>
+    cd <your_project_name>
+    rm -fr .git
+
+However, this will overwrite your `.git` directory if you've already got it
+(say, if you have created an empty project on GitHub and then cloned it). A
+better way to do this is to use `git archive` to create a tar file and then
+expanding it in your project directory.
+
+    cd <your_project_name>
+    git archive --remote=https://github.com/hhexo/dd-star.git -o dd-star.tar
+    tar -xvf dd-star.tar
+    rm -f dd-star.tar
+
+Note this will still overwrite other files: your top level `.gitignore`,
+your `README.md`, and your `LICENSE` and `NOTICE` files if you have them.
+Furthermore, a copy of this `GUIDE.md` will be created. You can delete it.
 
 ### How to build or clean all the projects
 
