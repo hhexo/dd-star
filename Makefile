@@ -19,6 +19,13 @@
 # First of all obtain the top level DDSTAR directory.
 DDSTAR_TOP_LEVEL_DIR := $(realpath $(dir $(firstword $(MAKEFILE_LIST))))
 
+# Check that the path does not contain spaces. Make cannot deal with spaces in
+# paths. Subpaths of the project will not contain spaces if the standard
+# structure is followed, therefore we only need to check the top level dir.
+ifneq ($(words $(DDSTAR_TOP_LEVEL_DIR)),1)
+$(error This build system does not support spaces in paths. Please move your project to another location so that the path does not contain spaces)
+endif
+
 include $(DDSTAR_TOP_LEVEL_DIR)/infra/make/dd-star-dirs-and-projects.mk
 
 # Each subproject must support the same targets as the DDSTAR core.
